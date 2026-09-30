@@ -7,7 +7,7 @@ Bot de Telegram para consultas analíticas en lenguaje natural sobre el modelo s
 El bot corre de forma nativa dentro de **OpenClaw** como una segunda cuenta de Telegram (`pbi`). No hay ningún script Python que mantener ni proceso externo que arrancar — OpenClaw levanta el bot automáticamente al iniciarse.
 
 ```
-Usuario (Telegram) → OpenClaw (canal pbi) → gpt-5.4-nano + MCP Power BI → respuesta
+Usuario (Telegram) → OpenClaw (canal pbi) → gpt-5.6-sol + MCP Power BI → respuesta
 ```
 
 ### Componentes
@@ -15,7 +15,7 @@ Usuario (Telegram) → OpenClaw (canal pbi) → gpt-5.4-nano + MCP Power BI → 
 | Componente | Descripción |
 |---|---|
 | OpenClaw canal `pbi` | Recibe mensajes del bot de Telegram y los enruta al agente |
-| `gpt-5.4-nano` | Modelo de lenguaje eficiente y económico |
+| `gpt-5.6-sol` | Modelo de lenguaje eficiente y económico |
 | MCP Power BI (`powerbi-modeling`) | Ejecuta DAX real contra el modelo semántico local |
 | Skill `pbi-adventureworks-dax` | Esquema completo + patrones DAX para reducir turns por pregunta |
 | `pbi_model/` | Definición TMDL del modelo (referencia, no se usa en ejecución) |
@@ -40,7 +40,7 @@ Configurado en OpenClaw en:
 ### Optimizaciones de costo activas
 - **Esquema embebido**: el modelo conoce todas las tablas, columnas y medidas — no necesita explorar el modelo antes de cada query
 - **Skill DAX**: `pbi-adventureworks-dax` guía al modelo a escribir DAX correcto en el primer intento
-- **Modelo eficiente**: `gpt-5.4-nano` en vez de `gpt-5.6-luna`
+- **Modelo eficiente**: `gpt-5.6-sol` en vez de `gpt-5.6-luna`
 - **Reset diario**: sesión reseteada a medianoche (`America/La_Paz`) via automatización OpenClaw (`d4baf3fd`)
 
 ## Logging
@@ -57,7 +57,7 @@ Cada línea es un JSON con:
 {
   "asst_seq": 24,
   "ts": "2026-09-30T20:37:10Z",
-  "model": "gpt-5.4-nano",
+  "model": "gpt-5.6-sol",
   "question": "cuantas categorias de productos hay?",
   "answer": "Hay **4 categorías de productos**.",
   "thinking": ["**Investigating MCP Power BI tools**"],
