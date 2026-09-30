@@ -7,7 +7,7 @@ Bot de Telegram para consultas analíticas en lenguaje natural sobre el modelo s
 El bot corre de forma nativa dentro de **OpenClaw** como una segunda cuenta de Telegram (`pbi`). No hay ningún script Python que mantener ni proceso externo que arrancar — OpenClaw levanta el bot automáticamente al iniciarse.
 
 ```
-Usuario (Telegram) → OpenClaw (canal pbi) → gpt-5.6-sol + MCP Power BI → respuesta
+Usuario (Telegram) → OpenClaw (canal pbi) → gpt-5.6-luna + MCP Power BI → respuesta
 ```
 
 ### Componentes
@@ -15,6 +15,7 @@ Usuario (Telegram) → OpenClaw (canal pbi) → gpt-5.6-sol + MCP Power BI → r
 | Componente | Descripción |
 |---|---|
 | OpenClaw canal `pbi` | Recibe mensajes del bot de Telegram y los enruta al agente |
+| `gpt-5.6-luna` | Modelo de lenguaje con razonamiento extendido |
 | MCP Power BI (`powerbi-modeling`) | Ejecuta DAX real contra el modelo semántico local |
 | `pbi_model/` | Definición TMDL del modelo (referencia, no se usa en ejecución) |
 | `tools/pbi_log.py` | Exporta conversaciones a JSONL incremental |
