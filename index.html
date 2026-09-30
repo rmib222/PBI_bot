@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PBI Bot — Análisis de Power BI por Telegram</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+.gh{background:linear-gradient(135deg,#1e3a8a,#1e40af,#2563eb)}
+.ch{transition:transform .2s,box-shadow .2s}
+.ch:hover{transform:translateY(-4px);box-shadow:0 16px 32px rgba(0,0,0,.12)}
+</style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+
+<!-- HERO -->
+<header class="gh text-white">
+<div class="max-w-5xl mx-auto px-6 py-20 text-center">
+  <div class="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm mb-6">
+    <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+    En producción — Modelo real AdventureWorks Sales
+  </div>
+  <h1 class="text-5xl font-extrabold tracking-tight mb-4">
+    PBI Bot
+    <span class="block text-blue-200 text-3xl font-semibold mt-2">Análisis de Power BI por Telegram</span>
+  </h1>
+  <p class="text-blue-100 text-xl max-w-2xl mx-auto mb-10">
+    Pregunta en español. Obtén respuestas con DAX real sobre el modelo semántico AdventureWorks Sales.<br>
+    Sin dashboards. Sin reportes. Solo conversación.
+  </p>
+
+  <!-- FLUJO -->
+  <div class="flex flex-wrap justify-center gap-3 mb-12 text-sm font-medium">
+    <span class="bg-white/15 border border-white/30 rounded-lg px-4 py-2">Telegram</span>
+    <span class="text-blue-300 self-center">→</span>
+    <span class="bg-white/15 border border-white/30 rounded-lg px-4 py-2">OpenClaw</span>
+    <span class="text-blue-300 self-center">→</span>
+    <span class="bg-white/15 border border-white/30 rounded-lg px-4 py-2">gpt-5.6-sol</span>
+    <span class="text-blue-300 self-center">+</span>
+    <span class="bg-white/15 border border-white/30 rounded-lg px-4 py-2">MCP Power BI</span>
+    <span class="text-blue-300 self-center">→</span>
+    <span class="bg-yellow-400/80 rounded-lg px-4 py-2 font-bold text-amber-900">Respuesta DAX</span>
+  </div>
+
+  <a href="https://t.me/PBI_project_bot" target="_blank"
+     class="inline-flex items-center gap-2 bg-white text-blue-700 font-bold text-lg px-8 py-4 rounded-xl shadow-lg hover:bg-blue-50 hover:scale-105 transition-all">
+    ✈ Abrir en Telegram
+  </a>
+</div>
+</header>
+
+<!-- CÓMO FUNCIONA -->
+<section class="max-w-5xl mx-auto px-6 py-20">
+  <h2 class="text-3xl font-bold text-center text-gray-900 mb-3">Cómo funciona</h2>
+  <p class="text-center text-gray-500 mb-12">Cada pregunta ejecuta DAX real contra el modelo semántico local</p>
+  <div class="grid md:grid-cols-3 gap-6">
+
+    <div class="ch bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+      <div class="text-3xl mb-4">💬</div>
+      <h3 class="font-bold text-lg mb-2">1. Pregunta natural</h3>
+      <p class="text-gray-500 text-sm">El usuario escribe en español. Sin sintaxis especial, sin formularios. El modelo entiende el contexto del negocio.</p>
+    </div>
+
+    <div class="ch bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+      <div class="text-3xl mb-4">⚙️</div>
+      <h3 class="font-bold text-lg mb-2">2. DAX generado</h3>
+      <p class="text-gray-500 text-sm">GPT-5.6-sol genera la consulta DAX correcta, la ejecuta contra el modelo de Power BI Desktop vía MCP y valida el resultado.</p>
+    </div>
+
+    <div class="ch bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+      <div class="text-3xl mb-4">📊</div>
+      <h3 class="font-bold text-lg mb-2">3. Respuesta directa</h3>
+      <p class="text-gray-500 text-sm">El resultado llega formateado al chat. Números con separadores de miles, rangos de fechas, comparaciones. Sin abrir Power BI.</p>
+    </div>
+  </div>
+</section>
+
+<!-- MODELO ADVENTUREWORKS -->
+<section class="bg-white border-t border-gray-100">
+<div class="max-w-5xl mx-auto px-6 py-20">
+  <h2 class="text-3xl font-bold text-center text-gray-900 mb-3">Dataset AdventureWorks Sales</h2>
+  <p class="text-center text-gray-500 mb-12">Modelo semántico real con datos históricos de ventas</p>
+  <div class="grid md:grid-cols-5 gap-4">
+    <div class="ch bg-blue-50 rounded-2xl p-5 border border-blue-200 text-center">
+      <div class="text-2xl mb-2">📈</div>
+      <h4 class="font-bold text-blue-900 mb-1 text-sm">Sales</h4>
+      <p class="text-blue-700 text-xs">Transacciones, montos, fechas</p>
+    </div>
+    <div class="ch bg-blue-50 rounded-2xl p-5 border border-blue-200 text-center">
+      <div class="text-2xl mb-2">👤</div>
+      <h4 class="font-bold text-blue-900 mb-1 text-sm">Customer</h4>
+      <p class="text-blue-700 text-xs">18.485 clientes únicos</p>
+    </div>
+    <div class="ch bg-blue-50 rounded-2xl p-5 border border-blue-200 text-center">
+      <div class="text-2xl mb-2">📦</div>
+      <h4 class="font-bold text-blue-900 mb-1 text-sm">Product</h4>
+      <p class="text-blue-700 text-xs">4 categorías, múltiples SKUs</p>
+    </div>
+    <div class="ch bg-blue-50 rounded-2xl p-5 border border-blue-200 text-center">
+      <div class="text-2xl mb-2">🗺️</div>
+      <h4 class="font-bold text-blue-900 mb-1 text-sm">Territory</h4>
+      <p class="text-blue-700 text-xs">10 territorios de venta</p>
+    </div>
+    <div class="ch bg-blue-50 rounded-2xl p-5 border border-blue-200 text-center">
+      <div class="text-2xl mb-2">📅</div>
+      <h4 class="font-bold text-blue-900 mb-1 text-sm">Date</h4>
+      <p class="text-blue-700 text-xs">48 meses (jul 2017 – jun 2021)</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- EJEMPLOS DE PREGUNTAS -->
+<section class="max-w-5xl mx-auto px-6 py-20">
+  <h2 class="text-3xl font-bold text-center text-gray-900 mb-3">Ejemplos de preguntas</h2>
+  <p class="text-center text-gray-500 mb-12">El bot responde cualquier consulta analítica sobre el modelo</p>
+  <div class="grid md:grid-cols-2 gap-4 max-w-3xl mx-auto">
+    <div class="bg-white rounded-xl px-5 py-4 border border-gray-100 shadow-sm flex items-start gap-3">
+      <span class="text-blue-400 font-bold shrink-0">→</span>
+      <span class="text-gray-700 text-sm">¿Cuántos meses tiene la base de datos?</span>
+    </div>
+    <div class="bg-white rounded-xl px-5 py-4 border border-gray-100 shadow-sm flex items-start gap-3">
+      <span class="text-blue-400 font-bold shrink-0">→</span>
+      <span class="text-gray-700 text-sm">¿Cuál es el total de ventas por categoría?</span>
+    </div>
+    <div class="bg-white rounded-xl px-5 py-4 border border-gray-100 shadow-sm flex items-start gap-3">
+      <span class="text-blue-400 font-bold shrink-0">→</span>
+      <span class="text-gray-700 text-sm">Dame el top 5 de clientes por ventas</span>
+    </div>
+    <div class="bg-white rounded-xl px-5 py-4 border border-gray-100 shadow-sm flex items-start gap-3">
+      <span class="text-blue-400 font-bold shrink-0">→</span>
+      <span class="text-gray-700 text-sm">¿Qué margen de ganancia tiene cada territorio?</span>
+    </div>
+    <div class="bg-white rounded-xl px-5 py-4 border border-gray-100 shadow-sm flex items-start gap-3">
+      <span class="text-blue-400 font-bold shrink-0">→</span>
+      <span class="text-gray-700 text-sm">Proyecta las ventas del siguiente mes</span>
+    </div>
+    <div class="bg-white rounded-xl px-5 py-4 border border-gray-100 shadow-sm flex items-start gap-3">
+      <span class="text-blue-400 font-bold shrink-0">→</span>
+      <span class="text-gray-700 text-sm">Mándame un Excel con el resumen de ventas</span>
+    </div>
+  </div>
+</section>
+
+<!-- STACK TÉCNICO -->
+<section class="bg-white border-t border-gray-100">
+<div class="max-w-5xl mx-auto px-6 py-20">
+  <h2 class="text-3xl font-bold text-center text-gray-900 mb-12">Stack técnico</h2>
+  <div class="grid md:grid-cols-2 gap-6">
+    <div class="ch bg-gray-50 rounded-2xl p-6 border border-gray-200">
+      <h3 class="font-bold text-gray-900 mb-4">Runtime</h3>
+      <ul class="space-y-2 text-sm text-gray-600">
+        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-500 shrink-0"></span><strong>OpenClaw</strong> — gateway de agentes AI, maneja el canal de Telegram nativamente</li>
+        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-500 shrink-0"></span><strong>gpt-5.6-sol</strong> — modelo de lenguaje con razonamiento extendido</li>
+        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-500 shrink-0"></span><strong>MCP powerbi-modeling</strong> — protocolo de herramientas para ejecutar DAX</li>
+        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-500 shrink-0"></span><strong>Power BI Desktop</strong> — motor de análisis local con el modelo semántico</li>
+      </ul>
+    </div>
+    <div class="ch bg-gray-50 rounded-2xl p-6 border border-gray-200">
+      <h3 class="font-bold text-gray-900 mb-4">Observabilidad</h3>
+      <ul class="space-y-2 text-sm text-gray-600">
+        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-green-500 shrink-0"></span>Log diario JSONL con pregunta, respuesta y thinking</li>
+        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-green-500 shrink-0"></span>Tokens por exchange (input, output, cache, reasoning)</li>
+        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-green-500 shrink-0"></span>Costo en USD por conversación</li>
+        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-green-500 shrink-0"></span>Exportación incremental cada 5 min (Task Scheduler)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- CTA FINAL -->
+<footer class="gh text-white">
+<div class="max-w-5xl mx-auto px-6 py-16 text-center">
+  <h2 class="text-3xl font-bold mb-4">Pruébalo ahora</h2>
+  <p class="text-blue-100 mb-8">Abre Telegram y empieza a preguntar sobre AdventureWorks Sales</p>
+  <a href="https://t.me/PBI_project_bot" target="_blank"
+     class="inline-flex items-center gap-2 bg-white text-blue-700 font-bold text-lg px-8 py-4 rounded-xl shadow-lg hover:bg-blue-50 hover:scale-105 transition-all">
+    ✈ @PBI_project_bot
+  </a>
+  <p class="text-blue-200 text-sm mt-8">
+    <a href="https://github.com/rmib222/PBI_bot" class="underline hover:text-white">Ver código en GitHub</a>
+  </p>
+</div>
+</footer>
+
+</body>
+</html>
