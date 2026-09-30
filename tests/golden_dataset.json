@@ -1,0 +1,17 @@
+{
+  "description": "Golden dataset — AdventureWorks Sales Bot — 10 business questions",
+  "seed": 42,
+  "synthetic_rows": 5000,
+  "questions": [
+    {"id": "Q1", "question": "total de ventas", "expected_type": "float", "description": "Suma total de Sales Amount", "acceptance": "valor > 0", "expected_min": 0},
+    {"id": "Q2", "question": "ganancia total", "expected_type": "float", "description": "Sales Amount - Total Product Cost", "acceptance": "valor > 0", "expected_min": 0},
+    {"id": "Q3", "question": "margen de ganancia", "expected_type": "float", "description": "Ganancia / Ventas * 100", "acceptance": "valor entre 0 y 100", "expected_min": 0, "expected_max": 100},
+    {"id": "Q4", "question": "clientes únicos", "expected_type": "int", "description": "COUNT DISTINCT CustomerKey", "acceptance": "valor == 500", "expected_exact": 500},
+    {"id": "Q5", "question": "pedidos totales", "expected_type": "int", "description": "COUNT DISTINCT SalesOrderLineKey", "acceptance": "valor == 5000", "expected_exact": 5000},
+    {"id": "Q6", "question": "ventas por categoría", "expected_type": "str", "description": "Categoría con más ventas", "acceptance": "en {Bikes, Components, Accessories}", "expected_contains": ["Bikes","Components","Accessories"]},
+    {"id": "Q7", "question": "ventas por territorio", "expected_type": "str", "description": "Territorio con más ventas", "acceptance": "nombre de región válido", "expected_contains": ["Northwest","Northeast","Southwest","Southeast","Central","France","Germany","Australia","Canada","United Kingdom"]},
+    {"id": "Q8", "question": "unidades vendidas", "expected_type": "int", "description": "SUM Order Quantity", "acceptance": "valor > 0", "expected_min": 0},
+    {"id": "Q9", "question": "promedio por pedido", "expected_type": "float", "description": "Sales Amount / pedidos únicos", "acceptance": "valor > 0", "expected_min": 0},
+    {"id": "Q10", "question": "top clientes", "expected_type": "str", "description": "Top 3 clientes por ventas", "acceptance": "lista de 3 strings", "expected_count": 3}
+  ]
+}
