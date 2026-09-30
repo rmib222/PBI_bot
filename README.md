@@ -69,7 +69,9 @@ Cada línea es un JSON con:
 }
 ```
 
-El script corre automáticamente cada 5 minutos via **Windows Task Scheduler** (`PBI_Bot_Logger`). Para ejecutarlo manualmente:
+El script corre automáticamente **cada minuto** via una automatización de OpenClaw (`PBI_Bot_Logger`, id: `6071e681`). Lee directamente el SQLite de OpenClaw sin overhead de exportación.
+
+Para ejecutarlo manualmente:
 
 ```bash
 python tools/pbi_log.py

@@ -1,187 +1,216 @@
-#!/usr/bin/env python3
 """
-pbi_log.py  Export PBI bot conversations to JSONL incrementally.
-
-Cada linea del archivo de salida representa una sesion completa de
-pregunta-respuesta con sus tokens, thinking y costo.
+pbi_log.py  Lee transcript_events de OpenClaw SQLite y escribe logs JSONL
+incrementales para la sesion PBI bot. Disenado para ejecutarse cada minuto.
 
 Uso: python tools/pbi_log.py
 """
 
 import json
-import shutil
-import subprocess
-import sys
+import sqlite3
+from datetime import date, datetime, timezone
 from pathlib import Path
 
-SESSION_KEY = "agent:main:telegram:pbi:direct:1353028892"
-SCRIPT_DIR  = Path(__file__).parent
-BOT_DIR     = SCRIPT_DIR.parent
-LOGS_DIR    = BOT_DIR / "logs"
-STATE_FILE  = LOGS_DIR / ".logged_run_ids"
+try:
+    import zstandard as zstd
+    DCTX = zstd.ZstdDecompressor()
+except ImportError:
+    DCTX = None
+
+DB_PATH    = Path(r"C:\Users\rmib2\.openclaw\agents\main\agent\openclaw-agent.sqlite")
+SESSION_ID = "d35a55a6-e05d-4189-9c12-9600dd60db03"
+SCRIPT_DIR = Path(__file__).parent
+LOGS_DIR   = SCRIPT_DIR.parent / "logs"
+STATE_FILE = LOGS_DIR / ".last_logged_asst_seq"
 
 
-def log_file_for_today() -> Path:
-    from datetime import date
-    return LOGS_DIR / f"conversations_{date.today().isoformat()}.jsonl"
+def log_file_for_date(d: date) -> Path:
+    return LOGS_DIR / f"conversations_{d.isoformat()}.jsonl"
 
 
-# ---------------------------------------------------------------------------
-# Export
-# ---------------------------------------------------------------------------
-
-def export_session() -> Path | None:
-    """Ejecuta openclaw export-trajectory y devuelve el directorio generado."""
-    result = subprocess.run(
-        ["powershell", "-Command",
-         f"openclaw sessions export-trajectory --session-key '{SESSION_KEY}' --json"],
-        capture_output=True, text=True, shell=False
-    )
-    # stdout puede tener warnings ANSI en stderr; stdout contiene solo el JSON
-    stdout = result.stdout.strip()
-    if result.returncode != 0 or not stdout:
-        print(f"[pbi_log] Export fallido: {result.stderr.strip()}", file=sys.stderr)
-        return None
-    # Buscar el bloque JSON (puede haber ruido ANSI antes)
-    idx = stdout.find("{")
-    if idx == -1:
-        print(f"[pbi_log] Sin JSON en la salida: {stdout[:200]}", file=sys.stderr)
-        return None
-    data = json.loads(stdout[idx:])
-    return Path(data["outputDir"])
+def decompress(data: bytes) -> str:
+    if DCTX is None:
+        raise RuntimeError("zstandard no instalado: pip install zstandard")
+    return DCTX.decompress(data).decode("utf-8")
 
 
-# ---------------------------------------------------------------------------
-# Parse
-# ---------------------------------------------------------------------------
+def load_events() -> list[dict]:
+    """Lee todos los eventos de la sesion PBI desde SQLite."""
+    con = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
+    rows = con.execute(
+        "SELECT seq, event_json, event_zstd FROM transcript_events "
+        "WHERE session_id = ? ORDER BY seq",
+        (SESSION_ID,)
+    ).fetchall()
+    con.close()
 
-def load_events(export_dir: Path) -> list[dict]:
     events = []
-    with open(export_dir / "events.jsonl", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                events.append(json.loads(line))
+    current_model = None
+    for seq, ej, ez in rows:
+        try:
+            raw = ej if ej else decompress(ez)
+            ev = json.loads(raw)
+        except Exception:
+            continue
+
+        t = ev.get("type", "")
+        if t == "custom" and ev.get("customType") == "model-snapshot":
+            current_model = ev.get("data", {}).get("modelId")
+
+        msg = ev.get("message")
+        if isinstance(msg, dict):
+            role = msg.get("role", "")
+            if role in ("user", "assistant"):
+                ev["_seq"]   = seq
+                ev["_role"]  = role
+                ev["_model"] = current_model
+                events.append(ev)
+
     return events
 
 
-def group_by_run(events: list[dict]) -> dict[str, list[dict]]:
-    runs: dict[str, list[dict]] = {}
-    for ev in events:
-        run_id = ev.get("runId")
-        if run_id:
-            runs.setdefault(run_id, []).append(ev)
-    return runs
+def extract_text(content) -> str:
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        return " ".join(
+            b.get("text", "")
+            for b in content
+            if isinstance(b, dict) and b.get("type") == "text"
+        )
+    return ""
 
 
-def extract_record(run_id: str, events: list[dict]) -> dict | None:
-    """Construye un registro de log a partir de los eventos de un run."""
-    events_sorted = sorted(events, key=lambda e: e.get("seq", 0))
+def extract_thinking(content) -> list[str]:
+    if not isinstance(content, list):
+        return []
+    return [
+        b["thinking"]
+        for b in content
+        if isinstance(b, dict) and b.get("type") == "thinking" and b.get("thinking")
+    ]
 
-    model_completed = None
 
-    for ev in events_sorted:
-        if ev["type"] == "model.completed":
-            model_completed = ev  # nos quedamos con el ultimo (resumen total)
-
-    if not model_completed:
-        return None
-
-    data    = model_completed.get("data", {})
-    usage   = data.get("usage", {})
-    cost    = usage.get("cost", {})
-
-    # La pregunta del usuario viene en finalPromptText (resumen del contexto de entrada)
-    user_message = data.get("finalPromptText", "")
-
-    # Thinking: extraer resúmenes de todos los pasos del messagesSnapshot
-    thinking_summaries: list[str] = []
-    for msg in data.get("messagesSnapshot", []):
-        if not isinstance(msg, dict) or msg.get("role") != "assistant":
+def build_exchanges(events: list[dict]) -> list[dict]:
+    """Agrupa eventos en exchanges (pregunta => respuesta final)."""
+    exchanges = []
+    i = 0
+    while i < len(events):
+        ev = events[i]
+        if ev["_role"] != "user":
+            i += 1
             continue
-        for block in (msg.get("content") or []):
-            if not isinstance(block, dict):
-                continue
-            if block.get("type") == "thinking":
-                t_text = block.get("thinking", "").strip()
-                if t_text:
-                    thinking_summaries.append(t_text)
 
-    # Respuesta final al usuario
-    answer = " ".join(data.get("assistantTexts") or [])
+        msg = ev.get("message", {})
+        question = extract_text(msg.get("content", ""))
+        ts_ms = msg.get("timestamp") or 0
+        if ts_ms:
+            ts = datetime.fromtimestamp(ts_ms / 1000, tz=timezone.utc).isoformat()
+        else:
+            ts = ev.get("timestamp", "")
 
-    return {
-        "run_id":    run_id,
-        "session_id": model_completed.get("sessionId"),
-        "ts":        model_completed.get("ts"),
-        "model":     model_completed.get("modelId"),
-        "question": user_message,
-        "answer":    answer,
-        "thinking":  thinking_summaries,
-        "tokens": {
-            "input":     usage.get("input", 0),
-            "output":    usage.get("output", 0),
-            "cache_read": usage.get("cacheRead", 0),
-            "reasoning": usage.get("reasoningTokens", 0),
-            "total":     usage.get("total", 0),
-        },
-        "cost_usd": cost.get("total", 0),
-    }
+        # Todos los assistant messages hasta el proximo user
+        j = i + 1
+        while j < len(events) and events[j]["_role"] == "assistant":
+            j += 1
+        asst_events = events[i + 1:j]
+
+        if not asst_events:
+            i = j
+            continue
+
+        # Ultimo assistant con texto real
+        final_asst = None
+        for ae in reversed(asst_events):
+            content = ae.get("message", {}).get("content", [])
+            has_text = any(
+                isinstance(b, dict) and b.get("type") == "text" and b.get("text")
+                for b in (content if isinstance(content, list) else [])
+            )
+            if has_text:
+                final_asst = ae
+                break
+        if final_asst is None:
+            final_asst = asst_events[-1]
+
+        answer = extract_text(final_asst.get("message", {}).get("content", []))
+
+        # Thinking de todos los turns del exchange
+        thinking = []
+        for ae in asst_events:
+            thinking.extend(extract_thinking(ae.get("message", {}).get("content", [])))
+
+        # Sumar tokens y costo de todos los turns del exchange
+        tok = {"input": 0, "output": 0, "cache_read": 0, "reasoning": 0, "total": 0}
+        total_cost = 0.0
+        for ae in asst_events:
+            u = ae.get("message", {}).get("usage") or {}
+            tok["input"]      += u.get("input", 0)
+            tok["output"]     += u.get("output", 0)
+            tok["cache_read"] += u.get("cacheRead", 0)
+            tok["reasoning"]  += u.get("reasoningTokens", 0)
+            tok["total"]      += u.get("totalTokens", 0)
+            total_cost        += (u.get("cost") or {}).get("total", 0.0)
+
+        exchanges.append({
+            "asst_seq": final_asst["_seq"],
+            "ts":       ts,
+            "model":    final_asst.get("_model") or "unknown",
+            "question": question,
+            "answer":   answer,
+            "thinking": thinking,
+            "tokens":   tok,
+            "cost_usd": round(total_cost, 6),
+        })
+        i = j
+
+    return exchanges
 
 
-# ---------------------------------------------------------------------------
-# State
-# ---------------------------------------------------------------------------
-
-def load_logged_ids() -> set[str]:
+def last_logged_seq() -> int:
     if STATE_FILE.exists():
-        return set(STATE_FILE.read_text(encoding="utf-8").strip().splitlines())
-    return set()
+        try:
+            return int(STATE_FILE.read_text(encoding="utf-8").strip())
+        except ValueError:
+            pass
+    return -1
 
-
-def save_logged_ids(ids: set[str]) -> None:
-    STATE_FILE.write_text("\n".join(sorted(ids)), encoding="utf-8")
-
-
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
 
 def main() -> None:
     LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
-    export_dir = export_session()
-    if not export_dir:
-        sys.exit(1)
+    last_seq  = last_logged_seq()
+    events    = load_events()
+    exchanges = build_exchanges(events)
 
-    try:
-        events      = load_events(export_dir)
-        logged_ids  = load_logged_ids()
-        runs        = group_by_run(events)
-        new_records = []
+    new_exchanges = [e for e in exchanges if e["asst_seq"] > last_seq]
+    if not new_exchanges:
+        print("Sin exchanges nuevos.")
+        return
 
-        for run_id, run_events in runs.items():
-            if run_id in logged_ids:
-                continue
-            # Solo loguear runs que completaron
-            if not any(e["type"] == "model.completed" for e in run_events):
-                continue
-            record = extract_record(run_id, run_events)
-            if record:
-                new_records.append(record)
-                logged_ids.add(run_id)
+    for ex in new_exchanges:
+        try:
+            ts_date = date.fromisoformat(ex["ts"][:10])
+        except Exception:
+            ts_date = date.today()
 
-        if new_records:
-            log_file = log_file_for_today()
-            with open(log_file, "a", encoding="utf-8") as f:
-                for rec in new_records:
-                    f.write(json.dumps(rec, ensure_ascii=False) + "\n")
-            save_logged_ids(logged_ids)
-            print(f"[pbi_log] +{len(new_records)} conversacion(es) => {log_file}")
-        else:
-            print("[pbi_log] Sin conversaciones nuevas.")
-    finally:
-        shutil.rmtree(export_dir, ignore_errors=True)
+        record = {
+            "asst_seq": ex["asst_seq"],
+            "ts":       ex["ts"],
+            "model":    ex["model"],
+            "question": ex["question"],
+            "answer":   ex["answer"],
+            "thinking": ex["thinking"],
+            "tokens":   ex["tokens"],
+            "cost_usd": ex["cost_usd"],
+        }
+        log_file = log_file_for_date(ts_date)
+        with log_file.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+        print(f"Logged seq={ex['asst_seq']}: {ex['question'][:60]}")
+
+    max_seq = max(e["asst_seq"] for e in new_exchanges)
+    STATE_FILE.write_text(str(max_seq), encoding="utf-8")
+    print(f"Guardado last_seq={max_seq}")
 
 
 if __name__ == "__main__":
