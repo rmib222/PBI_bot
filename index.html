@@ -41,7 +41,8 @@
     <span class="block text-purple-400 text-3xl font-semibold mt-2">Análisis de Power BI por Telegram</span>
   </h1>
   <p class="text-gray-400 text-xl max-w-2xl mx-auto mb-10">
-    Pregunta en español. Obtén respuestas con DAX real sobre el modelo semántico AdventureWorks Sales.<br>
+    Pregunta en español. Recibe cifras, <strong class="text-gray-200">gráficos</strong> y archivos Excel,
+    generados con DAX real sobre el modelo semántico AdventureWorks Sales.<br>
     Sin dashboards. Sin reportes. Solo conversación.
   </p>
 
@@ -51,11 +52,11 @@
     <span class="flow-arrow self-center">→</span>
     <span class="pill rounded-lg px-4 py-2 text-gray-200">OpenClaw</span>
     <span class="flow-arrow self-center">→</span>
-    <span class="pill rounded-lg px-4 py-2 text-gray-200">gpt-5.6-sol</span>
+    <span class="pill rounded-lg px-4 py-2 text-gray-200">LLM intercambiable</span>
     <span class="flow-arrow self-center">+</span>
     <span class="pill rounded-lg px-4 py-2 text-gray-200">MCP Power BI</span>
     <span class="flow-arrow self-center">→</span>
-    <span class="btn-primary rounded-lg px-4 py-2 font-bold">Respuesta DAX</span>
+    <span class="btn-primary rounded-lg px-4 py-2 font-bold">Cifras · Gráficos · Excel</span>
   </div>
 
   <a href="https://t.me/PBI_project_bot" target="_blank"
@@ -80,13 +81,13 @@
     <div class="ch card rounded-2xl p-6">
       <div class="text-3xl mb-4">⚙️</div>
       <h3 class="font-bold text-lg mb-2 text-white">2. DAX generado</h3>
-      <p class="text-gray-400 text-sm">GPT-5.6-sol genera la consulta DAX correcta, la ejecuta contra el modelo de Power BI Desktop vía MCP y valida el resultado.</p>
+      <p class="text-gray-400 text-sm">El modelo escribe la consulta DAX, la ejecuta contra Power BI Desktop vía MCP y valida el resultado. El esquema va embebido en el prompt, así que no explora el modelo antes de cada consulta.</p>
     </div>
 
     <div class="ch card rounded-2xl p-6">
       <div class="text-3xl mb-4">📊</div>
-      <h3 class="font-bold text-lg mb-2 text-white">3. Respuesta directa</h3>
-      <p class="text-gray-400 text-sm">El resultado llega formateado al chat. Números con separadores de miles, rangos de fechas, comparaciones. Sin abrir Power BI.</p>
+      <h3 class="font-bold text-lg mb-2 text-white">3. Cifra, gráfico o archivo</h3>
+      <p class="text-gray-400 text-sm">Según lo que pidas: números formateados, un gráfico renderizado como imagen, o un Excel adjunto. Todo llega al chat, sin abrir Power BI.</p>
     </div>
   </div>
 </section>
@@ -128,33 +129,71 @@
 
 <!-- EJEMPLOS DE PREGUNTAS -->
 <section class="max-w-5xl mx-auto px-6 py-20">
-  <h2 class="text-3xl font-bold text-center text-white mb-3">Ejemplos de preguntas</h2>
-  <p class="text-center text-gray-500 mb-12">El bot responde cualquier consulta analítica sobre el modelo</p>
-  <div class="grid md:grid-cols-2 gap-4 max-w-3xl mx-auto">
-    <div class="ch card rounded-xl px-5 py-4 flex items-start gap-3">
-      <span class="text-pink font-bold shrink-0">→</span>
-      <span class="text-gray-300 text-sm">¿Cuántos meses tiene la base de datos?</span>
+  <h2 class="text-3xl font-bold text-center text-white mb-3">Preguntas reales</h2>
+  <p class="text-center text-gray-500 mb-12">Tomadas del log de conversaciones, tal como se escribieron</p>
+
+  <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+
+    <div class="card-alt rounded-2xl p-6">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="text-xl">🔢</span>
+        <h3 class="font-bold text-white text-sm">Consultas directas</h3>
+      </div>
+      <div class="space-y-3">
+        <div class="ch card rounded-xl px-4 py-3 flex items-start gap-2">
+          <span class="text-pink font-bold shrink-0 text-sm">→</span>
+          <span class="text-gray-300 text-sm">cuántas categorías de productos hay?</span>
+        </div>
+        <div class="ch card rounded-xl px-4 py-3 flex items-start gap-2">
+          <span class="text-pink font-bold shrink-0 text-sm">→</span>
+          <span class="text-gray-300 text-sm">cuántos clientes hay?</span>
+        </div>
+        <div class="ch card rounded-xl px-4 py-3 flex items-start gap-2">
+          <span class="text-pink font-bold shrink-0 text-sm">→</span>
+          <span class="text-gray-300 text-sm">cuáles son los peores productos</span>
+        </div>
+      </div>
     </div>
-    <div class="ch card rounded-xl px-5 py-4 flex items-start gap-3">
-      <span class="text-pink font-bold shrink-0">→</span>
-      <span class="text-gray-300 text-sm">¿Cuál es el total de ventas por categoría?</span>
+
+    <div class="card-alt rounded-2xl p-6">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="text-xl">📈</span>
+        <h3 class="font-bold text-white text-sm">Gráficos</h3>
+        <span class="tag rounded-full px-2 py-0.5 text-xs">el uso más común</span>
+      </div>
+      <div class="space-y-3">
+        <div class="ch card rounded-xl px-4 py-3 flex items-start gap-2">
+          <span class="text-pink font-bold shrink-0 text-sm">→</span>
+          <span class="text-gray-300 text-sm">hazme un gráfico de los ingresos de los últimos 6 meses</span>
+        </div>
+        <div class="ch card rounded-xl px-4 py-3 flex items-start gap-2">
+          <span class="text-pink font-bold shrink-0 text-sm">→</span>
+          <span class="text-gray-300 text-sm">haz un gráfico con los productos más vendidos de los últimos 6 meses</span>
+        </div>
+        <div class="ch card rounded-xl px-4 py-3 flex items-start gap-2">
+          <span class="text-pink font-bold shrink-0 text-sm">→</span>
+          <span class="text-gray-300 text-sm">genera un gráfico con los clientes más importantes de los últimos 8 meses</span>
+        </div>
+      </div>
     </div>
-    <div class="ch card rounded-xl px-5 py-4 flex items-start gap-3">
-      <span class="text-pink font-bold shrink-0">→</span>
-      <span class="text-gray-300 text-sm">Dame el top 5 de clientes por ventas</span>
+
+    <div class="card-alt rounded-2xl p-6">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="text-xl">📂</span>
+        <h3 class="font-bold text-white text-sm">Archivos y análisis</h3>
+      </div>
+      <div class="space-y-3">
+        <div class="ch card rounded-xl px-4 py-3 flex items-start gap-2">
+          <span class="text-pink font-bold shrink-0 text-sm">→</span>
+          <span class="text-gray-300 text-sm">puedes mandarme un archivo excel con el resumen de ventas de productos?</span>
+        </div>
+        <div class="ch card rounded-xl px-4 py-3 flex items-start gap-2">
+          <span class="text-pink font-bold shrink-0 text-sm">→</span>
+          <span class="text-gray-300 text-sm">proyecta cómo nos irá el siguiente mes y explícame cómo lo hiciste</span>
+        </div>
+      </div>
     </div>
-    <div class="ch card rounded-xl px-5 py-4 flex items-start gap-3">
-      <span class="text-pink font-bold shrink-0">→</span>
-      <span class="text-gray-300 text-sm">¿Qué margen de ganancia tiene cada territorio?</span>
-    </div>
-    <div class="ch card rounded-xl px-5 py-4 flex items-start gap-3">
-      <span class="text-pink font-bold shrink-0">→</span>
-      <span class="text-gray-300 text-sm">Proyecta las ventas del siguiente mes</span>
-    </div>
-    <div class="ch card rounded-xl px-5 py-4 flex items-start gap-3">
-      <span class="text-pink font-bold shrink-0">→</span>
-      <span class="text-gray-300 text-sm">Mándame un Excel con el resumen de ventas</span>
-    </div>
+
   </div>
 </section>
 
@@ -166,24 +205,77 @@
     <div class="ch card-alt rounded-2xl p-6">
       <h3 class="font-bold text-white mb-4">Runtime</h3>
       <ul class="space-y-2 text-sm text-gray-400">
-        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full dot-pink shrink-0"></span><strong class="text-gray-200">OpenClaw</strong> — gateway de agentes AI, maneja el canal de Telegram nativamente</li>
-        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full dot-pink shrink-0"></span><strong class="text-gray-200">gpt-5.6-sol</strong> — modelo de lenguaje eficiente y económico</li>
-        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full dot-pink shrink-0"></span><strong class="text-gray-200">MCP powerbi-modeling</strong> — protocolo de herramientas para ejecutar DAX</li>
-        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full dot-pink shrink-0"></span><strong class="text-gray-200">Power BI Desktop</strong> — motor de análisis local con el modelo semántico</li>
-        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full dot-purple shrink-0"></span><strong class="text-gray-200">Skill pbi-adventureworks-dax</strong> — esquema y patrones DAX para DAX eficiente en el primer intento</li>
+        <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full dot-pink shrink-0 mt-1.5"></span><span><strong class="text-gray-200">OpenClaw</strong> — gateway de agentes AI, maneja el canal de Telegram nativamente</span></li>
+        <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full dot-pink shrink-0 mt-1.5"></span><span><strong class="text-gray-200">LLM intercambiable</strong> — el modelo es un parámetro de configuración, no parte de la arquitectura</span></li>
+        <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full dot-pink shrink-0 mt-1.5"></span><span><strong class="text-gray-200">MCP powerbi-modeling</strong> — protocolo de herramientas para ejecutar DAX</span></li>
+        <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full dot-pink shrink-0 mt-1.5"></span><span><strong class="text-gray-200">Power BI Desktop</strong> — motor de análisis local con el modelo semántico</span></li>
+        <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full dot-purple shrink-0 mt-1.5"></span><span><strong class="text-gray-200">Skill pbi-adventureworks-dax</strong> — esquema y patrones para DAX correcto en el primer intento</span></li>
       </ul>
     </div>
     <div class="ch card-alt rounded-2xl p-6">
-      <h3 class="font-bold text-white mb-4">Observabilidad</h3>
+      <h3 class="font-bold text-white mb-4">Diseño</h3>
       <ul class="space-y-2 text-sm text-gray-400">
-        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full dot-green shrink-0"></span>Log diario JSONL con pregunta, respuesta y thinking</li>
-        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full dot-green shrink-0"></span>Tokens por exchange (input, output, cache, reasoning)</li>
-        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full dot-green shrink-0"></span>Costo en USD por conversación</li>
-        <li class="flex items-center gap-2"><span class="w-2 h-2 rounded-full dot-green shrink-0"></span>Log en tiempo real — cron cada minuto vía OpenClaw</li>
+        <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full dot-purple shrink-0 mt-1.5"></span><span><strong class="text-gray-200">Sin script que mantener</strong> — el bot corre como una segunda cuenta de Telegram dentro de OpenClaw</span></li>
+        <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full dot-purple shrink-0 mt-1.5"></span><span><strong class="text-gray-200">Esquema embebido</strong> — tablas, columnas y medidas van en el prompt; cero turnos de exploración</span></li>
+        <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full dot-purple shrink-0 mt-1.5"></span><span><strong class="text-gray-200">Reconexión automática</strong> — el bot verifica y restablece la conexión al modelo antes de cada consulta</span></li>
+        <li class="flex items-start gap-2"><span class="w-2 h-2 rounded-full dot-purple shrink-0 mt-1.5"></span><span><strong class="text-gray-200">Reset diario</strong> — sesión limpia a medianoche para acotar el contexto acumulado</span></li>
       </ul>
     </div>
   </div>
 </div>
+</section>
+
+<!-- MONITOREO -->
+<section class="max-w-5xl mx-auto px-6 py-20">
+  <h2 class="text-3xl font-bold text-center text-white mb-3">Monitoreo</h2>
+  <p class="text-center text-gray-500 mb-12">
+    Cada conversación queda registrada con su consumo real. Una automatización de OpenClaw
+    exporta los intercambios nuevos a JSONL <strong class="text-gray-400">cada minuto</strong>.
+  </p>
+
+  <div class="grid md:grid-cols-3 gap-6 mb-10">
+    <div class="ch card rounded-2xl p-6">
+      <div class="text-3xl mb-4">📝</div>
+      <h3 class="font-bold text-lg mb-2 text-white">Qué se guarda</h3>
+      <p class="text-gray-400 text-sm">Pregunta, respuesta, razonamiento, desglose de tokens (input, output, cache read, cache write, reasoning) y costo, con hora local.</p>
+    </div>
+    <div class="ch card rounded-2xl p-6">
+      <div class="text-3xl mb-4">🔍</div>
+      <h3 class="font-bold text-lg mb-2 text-white">Consciente de la ruta</h3>
+      <p class="text-gray-400 text-sm">No todas las rutas de ejecución reportan lo mismo. El log identifica cuál se usó y marca qué campos son fiables en cada una.</p>
+    </div>
+    <div class="ch card rounded-2xl p-6">
+      <div class="text-3xl mb-4">💵</div>
+      <h3 class="font-bold text-lg mb-2 text-white">Costo real o estimado</h3>
+      <p class="text-gray-400 text-sm">Si el proveedor informa el costo, se guarda tal cual. Si no, se estima con tarifas de catálogo y se etiqueta como estimación — nunca se finge un cero.</p>
+    </div>
+  </div>
+
+  <div class="card-alt rounded-2xl p-6">
+    <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+      <h3 class="font-bold text-white text-sm">Registro real del log</h3>
+      <span class="tag rounded-full px-3 py-1 text-xs">logs/conversations_YYYY-MM-DD.jsonl</span>
+    </div>
+<pre class="text-xs leading-relaxed overflow-x-auto text-gray-400"><code>{
+  <span class="text-purple-400">"ts"</span>:        <span class="text-gray-300">"2026-09-30T21:39:13-04:00"</span>,
+  <span class="text-purple-400">"route"</span>:     <span class="text-gray-300">"cli"</span>,
+  <span class="text-purple-400">"question"</span>:  <span class="text-gray-300">"cuales son los peores productos"</span>,
+  <span class="text-purple-400">"tokens"</span>: {
+    <span class="text-purple-400">"input"</span>: <span class="text-pink">2</span>, <span class="text-purple-400">"output"</span>: <span class="text-pink">8</span>,
+    <span class="text-purple-400">"cache_read"</span>: <span class="text-pink">113036</span>, <span class="text-purple-400">"cache_write"</span>: <span class="text-pink">1449</span>,
+    <span class="text-purple-400">"total"</span>: <span class="text-pink">114495</span>
+  },
+  <span class="text-purple-400">"tokens_note"</span>: <span class="text-gray-300">"parcial: la ruta cli reporta input/output como
+                   stub; solo cache_read y cache_write son reales"</span>,
+  <span class="text-purple-400">"cost_usd"</span>:           <span class="text-gray-500">null</span>,
+  <span class="text-purple-400">"cost_estimated_usd"</span>: <span class="text-pink">0.026314</span>,
+  <span class="text-purple-400">"cost_note"</span>:          <span class="text-gray-300">"ESTIMADO desde catalogo; piso minimo"</span>
+}</code></pre>
+    <p class="text-gray-500 text-xs mt-4 border-t border-gray-800 pt-4">
+      Cada campo vacío lleva su propia nota explicando <em>por qué</em> lo está.
+      Un cero que en realidad significa «no disponible» es un dato falso.
+    </p>
+  </div>
 </section>
 
 <!-- CTA FINAL -->
