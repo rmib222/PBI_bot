@@ -92,6 +92,35 @@ def load_trajectory_usage() -> dict:
     return by_turn
 
 
+def load_failures() -> dict:
+    """Turnos que murieron antes de responder, indexados por seq.
+
+    OpenClaw escribe un evento custom 'run-failed-before-reply' cuando el turno
+    termina sin respuesta (modelo caido, CLI colgado, timeout). Sin esto la
+    pregunta queda huerfana e invisible en el log.
+    """
+    con = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
+    rows = con.execute(
+        "SELECT seq, event_json, event_zstd FROM transcript_events "
+        "WHERE session_id = ? ORDER BY seq",
+        (SESSION_ID,)
+    ).fetchall()
+    con.close()
+
+    failures = {}
+    for seq, ej, ez in rows:
+        try:
+            raw = ej if ej else decompress(ez)
+            ev = json.loads(raw)
+        except Exception:
+            continue
+        if ev.get("customType") != "run-failed-before-reply":
+            continue
+        motivo = (ev.get("details", {}) or {}).get("error") or ev.get("content", "")
+        failures[seq] = motivo.replace("This turn ended before a reply:", "").strip()
+    return failures
+
+
 def load_events(trajectory_usage: dict) -> list[dict]:
     """Lee todos los eventos de la sesion PBI desde SQLite."""
     con = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
@@ -161,8 +190,9 @@ def extract_thinking(content) -> list[str]:
     ]
 
 
-def build_exchanges(events: list[dict]) -> list[dict]:
+def build_exchanges(events: list[dict], failures: dict | None = None) -> list[dict]:
     """Agrupa eventos en exchanges (pregunta => respuesta final)."""
+    failures = failures or {}
     exchanges = []
     i = 0
     while i < len(events):
@@ -186,6 +216,35 @@ def build_exchanges(events: list[dict]) -> list[dict]:
         asst_events = events[i + 1:j]
 
         if not asst_events:
+            # Pregunta sin respuesta. Solo se registra si hay un evento de fallo
+            # explicito; si no lo hay, el turno sigue en curso y se registrara
+            # cuando llegue la respuesta.
+            user_seq = ev["_seq"]
+            next_seq = events[j]["_seq"] if j < len(events) else float("inf")
+            motivo = next(
+                (m for fseq, m in sorted(failures.items())
+                 if user_seq < fseq < next_seq),
+                None,
+            )
+            if motivo:
+                exchanges.append({
+                    "asst_seq": user_seq,
+                    "ts":       ts,
+                    "status":   "sin_respuesta",
+                    "model":    ev.get("_model") or "unknown",
+                    "route":    "n/d",
+                    "question": question,
+                    "answer":   "",
+                    "failure_reason": motivo,
+                    "thinking": [],
+                    "thinking_note": "n/d: el turno murio antes de responder",
+                    "tokens":   {"input": 0, "output": 0, "cache_read": 0,
+                                 "cache_write": 0, "reasoning": 0, "total": 0},
+                    "tokens_note": "n/d: el turno murio antes de responder",
+                    "cost_usd": None,
+                    "cost_estimated_usd": None,
+                    "cost_note": "n/d: el turno murio antes de responder",
+                })
             i = j
             continue
 
@@ -288,6 +347,7 @@ def build_exchanges(events: list[dict]) -> list[dict]:
         exchanges.append({
             "asst_seq": final_asst["_seq"],
             "ts":       ts,
+            "status":   "ok",
             "model":    model,
             "route":    route or "desconocida",
             "question": question,
@@ -319,8 +379,9 @@ def main() -> None:
 
     last_seq        = last_logged_seq()
     traj_usage      = load_trajectory_usage()
+    failures        = load_failures()
     events          = load_events(traj_usage)
-    exchanges       = build_exchanges(events)
+    exchanges       = build_exchanges(events, failures)
 
     new_exchanges = [e for e in exchanges if e["asst_seq"] > last_seq]
     if not new_exchanges:
